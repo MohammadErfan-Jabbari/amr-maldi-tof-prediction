@@ -1,0 +1,356 @@
+\documentclass[final]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Poster board (portrait): 50cm x 70cm
+\usepackage[size=custom,width=50,height=70,scale=0.74]{beamerposter}
+
+\usetheme{default}
+\setbeamertemplate{navigation symbols}{}
+
+% --- Colors ---
+\definecolor{DarkBlue}{HTML}{1a365d}
+\definecolor{Accent}{HTML}{e53e3e}
+\definecolor{LightGray}{HTML}{f7fafc}
+
+\setbeamercolor{headline}{fg=white,bg=DarkBlue}
+\setbeamercolor{block title}{fg=DarkBlue,bg=white}
+\setbeamercolor{block body}{fg=black,bg=LightGray}
+
+% --- Fonts ---
+\setbeamerfont{headline title}{size=\VeryHuge,series=\bfseries}
+\setbeamerfont{headline author}{size=\LARGE}
+\setbeamerfont{block title}{size=\LARGE,series=\bfseries,family=\sffamily}
+\setbeamerfont{block body}{size=\large}
+
+% --- Block style ---
+\setbeamertemplate{block begin}{
+  \vskip1ex
+  \begin{beamercolorbox}[leftskip=1cm,rightskip=1cm]{block title}
+    \usebeamerfont{block title}\insertblocktitle
+  \end{beamercolorbox}
+  \vskip-0.5ex
+  {\color{Accent}\rule{\linewidth}{2pt}}
+  \vskip1ex
+  \begin{beamercolorbox}[leftskip=1cm,rightskip=1cm,vmode]{block body}
+    \usebeamerfont{block body}\vspace{0.3em}
+}
+\setbeamertemplate{block end}{
+  \vspace{0.5em}
+  \end{beamercolorbox}
+  \vskip1.0ex
+}
+
+\begin{document}
+\begin{frame}[t]
+
+% ============================================================
+% HEADER (using TikZ for edge-to-edge coverage)
+% ============================================================
+\begin{tikzpicture}[remember picture,overlay]
+  % Dark blue header background (extend above edge to cover any margin)
+  \fill[DarkBlue] ([yshift=1cm]current page.north west) rectangle ([yshift=-5.5cm]current page.north east);
+  % Red accent line below header
+  \fill[Accent] ([yshift=-5.5cm]current page.north west) rectangle ([yshift=-5.7cm]current page.north east);
+  % Header text
+  \node[anchor=north west, text=white, font=\fontsize{44}{52}\selectfont\bfseries]
+    at ([xshift=1.5cm, yshift=-0.8cm]current page.north west)
+    {AMR Prediction: Lessons from Distribution Shift};
+  \node[anchor=north west, text=white, font=\Large]
+    at ([xshift=1.5cm, yshift=-2.8cm]current page.north west)
+    {MohammadErfan Jabbari$^{1,2}$ \quad \& \quad Ana-Maria Mirza$^{1}$};
+  \node[anchor=north west, text=white, font=\normalsize]
+    at ([xshift=1.5cm, yshift=-3.8cm]current page.north west)
+    {$^{1}$Universidad Carlos III de Madrid \enspace $\cdot$ \enspace $^{2}$IMDEA Networks Institute};
+\end{tikzpicture}
+
+\vspace{4.5cm}
+
+% ============================================================
+% TWO COLUMNS
+% ============================================================
+\begin{columns}[t,totalwidth=\textwidth]
+
+% --- LEFT COLUMN ---
+\begin{column}{0.48\textwidth}
+
+\begin{block}{1. The Challenges}
+Three properties of this dataset shaped every modeling decision:
+
+\vspace{0.8em}
+\textbf{1. Species Distribution Shift}\\[0.3em]
+The training set is dominated by \textit{P.~aeruginosa} (43\%), but this species represents only 3\% of the test set. Meanwhile, \textit{K.~pneumoniae} jumps from 28\% to 51\%. Any model that performs well on training validation will be optimizing for the wrong population.
+
+\vspace{0.5em}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    xbar,
+    width=0.78\linewidth,
+    height=6.5cm,
+    xlabel={\textbf{\% of samples}},
+    xlabel style={font=\normalsize},
+    symbolic y coords={P. aeruginosa, P. mirabilis, E. coli, K. pneumoniae},
+    ytick=data,
+    yticklabel style={font=\normalsize\itshape, rotate=25, anchor=east},
+    xmin=0, xmax=60,
+    xtick={0,10,20,30,40,50},
+    xticklabel style={font=\small},
+    legend style={at={(0.97,0.03)}, anchor=south east, font=\small, draw=none, fill=white, fill opacity=0.9},
+    bar width=11pt,
+    enlarge y limits=0.3,
+    nodes near coords,
+    nodes near coords style={font=\small\bfseries, /pgf/number format/fixed, /pgf/number format/precision=0},
+    every node near coord/.append style={anchor=west, xshift=2pt},
+]
+\addplot[fill=DarkBlue, draw=DarkBlue!80] coordinates {(43,P. aeruginosa) (12,P. mirabilis) (17,E. coli) (28,K. pneumoniae)};
+\addplot[fill=Accent, draw=Accent!80] coordinates {(3,P. aeruginosa) (19,P. mirabilis) (27,E. coli) (51,K. pneumoniae)};
+\legend{Train, Test}
+\end{axis}
+\end{tikzpicture}
+
+\vspace{0.3em}
+{\normalsize\textbf{Figure 1:} \textit{P.~aeruginosa} dominates training (43\%) but nearly vanishes in test (3\%). Models optimizing for training distribution will fail.}
+\end{center}
+
+\vspace{0.6em}
+\textbf{2. Extreme Feature Sparsity}\\[0.3em]
+93\% of the MALDI-TOF feature matrix is zeros. The signal lives in sparse intensity peaks, not dense patterns. This favors tree-based models (LightGBM) over neural networks, and makes aggressive dimensionality reduction dangerous: compressing too hard discards the signal.
+
+\vspace{0.8em}
+\textbf{3. Non-Random Missing Labels}\\[0.3em]
+Label missingness is not uniform: 43\% of Amoxicillin/Clavulanic acid labels are missing, compared to under 3\% for most other antibiotics. This reflects clinical testing practices, not random noise. Ignoring the pattern or imputing naively corrupts the learning signal.
+
+\vspace{0.6em}
+These three facts explain most of what worked and what failed.
+\end{block}
+
+\begin{block}{2. What We Explored}
+We systematically tested approaches across five categories before converging on the final pipeline:
+
+\vspace{0.8em}
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={minimum width=2.85cm, minimum height=0.85cm, rounded corners=2pt, font=\small\bfseries, text=white, align=center},
+    worked/.style={box, fill=DarkBlue!85},
+    partial/.style={box, fill=orange!80!black},
+    failed/.style={box, fill=Accent!85},
+    category/.style={font=\small\bfseries, text=DarkBlue, anchor=east},
+]
+
+% Row 1: Models (3.3cm spacing, 2.85cm boxes = 0.45cm gaps)
+\node[category] at (-0.8, 0) {Models};
+\node[worked] at (1.4, 0) {LightGBM};
+\node[worked] at (4.7, 0) {XGBoost};
+\node[worked] at (8.0, 0) {CatBoost};
+\node[failed] at (11.3, 0) {MLP};
+
+% Row 2: Dim Reduction
+\node[category] at (-0.8, -1.2) {Dim.~Reduction};
+\node[worked] at (1.4, -1.2) {PLS};
+\node[partial] at (4.7, -1.2) {PCA};
+\node[failed] at (8.0, -1.2) {KPCA};
+\node[failed] at (11.3, -1.2) {NMF};
+
+% Row 3: Ensembles
+\node[category] at (-0.8, -2.4) {Ensembles};
+\node[worked] at (1.4, -2.4) {Rank Avg};
+\node[failed] at (4.7, -2.4) {Stacking};
+\node[partial] at (8.0, -2.4) {Weighted};
+
+% Row 4: Other
+\node[category] at (-0.8, -3.6) {Other};
+\node[partial] at (1.4, -3.6) {Self-Train};
+\node[failed] at (4.7, -3.6) {32 Species};
+
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5em}
+\begin{center}
+\begin{tikzpicture}[
+    legendbox/.style={minimum width=0.72cm, minimum height=0.45cm, rounded corners=2pt},
+]
+\node[legendbox, fill=DarkBlue!85] at (0, 0) {};
+\node[font=\small, anchor=west] at (0.5, 0) {Worked};
+\node[legendbox, fill=orange!80!black] at (3.2, 0) {};
+\node[font=\small, anchor=west] at (3.7, 0) {Partial};
+\node[legendbox, fill=Accent!85] at (6.4, 0) {};
+\node[font=\small, anchor=west] at (6.9, 0) {Failed};
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.2em}
+\begin{center}
+{\normalsize\textbf{Figure 2:} Failures were informative: stacking overfit, species-specific models lacked data, aggressive DR lost signal.}
+\end{center}
+\end{block}
+\vspace{-0.4em}
+
+\vfill
+
+\begin{block}{3. Results}
+\vspace{0.3em}
+\begin{center}
+{\setlength{\tabcolsep}{0.6em}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Submission} & \textbf{Public LB} & \textbf{Private LB} & \textbf{OOF CV} \\
+\midrule
+\rowcolor{DarkBlue!10} \textbf{Mega-blend (rank avg)} & \textbf{0.8386} & \textbf{0.8131} & 0.8174 \\
+Self-training blend & 0.8366 & 0.8094 & 0.8052 \\
+LightGBM + PLS & 0.8323 & 0.8012 & 0.7986 \\
+\rowcolor{Accent!10} Stacking (overfit) & 0.8269 & 0.7840 & \textit{0.9545} \\
+Baseline & 0.8022 & 0.7856 & 0.7823 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+\vspace{0.5em}
+\begin{center}
+{\normalsize\textbf{Table 1:} Stacking achieved OOF 0.9545 but collapsed on private leaderboard.}
+\end{center}
+
+\end{block}
+
+\end{column}
+
+% --- RIGHT COLUMN ---
+\begin{column}{0.48\textwidth}
+
+\begin{block}{4. What Worked}
+Three techniques lifted our score from 0.80 baseline to 0.81 private:
+
+\vspace{0.6em}
+\textbf{1. Rank Averaging over Stacking}\\[0.3em]
+Stacking learns to trust your validation signal. Under distribution shift, that trust is misplaced. Rank averaging converts predictions to ranks before blending, normalizing scale differences between models and reducing sensitivity to outliers. It stays skeptical.
+
+\vspace{0.3em}
+\begin{center}
+$\displaystyle \hat{y}_{\text{blend}} = \frac{1}{M}\sum_{m=1}^{M} \frac{\text{rank}(\hat{y}_m)}{N}$
+\quad {\small(M=3 models, N=samples)}
+\end{center}
+
+\vspace{0.6em}
+\textbf{2. Species-Aware Weighting}\\[0.3em]
+Knowing that \textit{K.~pneumoniae} dominates the test set (51\%) and \textit{P.~aeruginosa} nearly vanishes (3\%), we up-weighted K.~pneumoniae predictions by 3$\times$ and down-weighted P.~aeruginosa to 0.05$\times$. Simple rebalancing that matches the deployment distribution.
+
+\vspace{0.6em}
+\textbf{3. Intrinsic Resistance Rules}\\[0.3em]
+Certain species are intrinsically resistant to certain antibiotics. This biological prior gives us 18.8\% of predictions for free with 100\% confidence. We override model outputs with hard-coded resistance rules.
+
+\vspace{0.8em}
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.6cm,
+    box/.style={draw=DarkBlue, fill=LightGray, rounded corners=3pt, minimum width=3.0cm, minimum height=0.8cm, font=\small, align=center, thick},
+    arrow/.style={->, thick, DarkBlue!80},
+]
+\node[box] (lgb) {LightGBM + PLS};
+\node[box, right=of lgb] (xgb) {XGBoost};
+\node[box, right=of xgb] (cat) {CatBoost};
+
+\node[box, below=0.9cm of xgb, fill=DarkBlue!15, minimum width=4cm] (rank) {Rank Average};
+
+\node[box, below=0.7cm of rank, fill=orange!20, minimum width=4cm] (species) {Species Weighting};
+
+\node[box, below=0.7cm of species, fill=DarkBlue!25, minimum width=4cm] (rules) {Intrinsic Resistance};
+
+\draw[arrow] (lgb) -- (rank);
+\draw[arrow] (xgb) -- (rank);
+\draw[arrow] (cat) -- (rank);
+\draw[arrow] (rank) -- (species);
+\draw[arrow] (species) -- (rules);
+
+\node[right=0.3cm of rules, font=\small\bfseries, text=DarkBlue] {Final};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3em}
+\begin{center}
+{\normalsize\textbf{Figure 3:} Final pipeline. Training: 5-fold stratified CV, LightGBM (lr=0.02, 350 trees, 127 leaves), PLS 100 components.}
+\end{center}
+
+\vspace{0.5em}
+\textbf{Why PLS?} Partial Least Squares projects features using target labels, preserving signal that correlates with resistance. Unsupervised methods (PCA, NMF) optimize variance, discarding predictive low-variance peaks.
+\end{block}
+
+\begin{block}{5. What Failed \& Why}
+Honest lessons from approaches that did not improve our score:
+
+\vspace{0.6em}
+\textbf{Stacking} (OOF 0.9545 $\rightarrow$ LB 0.827)\\[0.2em]
+The meta-learner memorized validation patterns that did not generalize. High OOF score was a trap, not a signal.
+
+\vspace{0.5em}
+\textbf{Species-Specific Models} (32 separate models)\\[0.2em]
+Splitting by species left too few samples per model. \textit{P.~aeruginosa} had 4,100 training rows but represents only 3\% of test. Models underfit.
+
+\vspace{0.5em}
+\textbf{Aggressive Dimensionality Reduction}\\[0.2em]
+KPCA and NMF compressed too hard, discarding sparse intensity peaks that carried signal. PLS succeeded because it uses the target during projection.
+
+\vspace{0.5em}
+\textbf{K.~pneumoniae-Only Optimization}\\[0.2em]
+We tried tuning exclusively for K.~pneumoniae (51\% of test). This hurt E.~coli and P.~mirabilis enough to lower the macro-averaged score.
+
+\vspace{0.8em}
+\begin{center}
+\fcolorbox{DarkBlue}{LightGray}{%
+\parbox{0.88\linewidth}{%
+\centering\large\textit{``Stacking learns to trust your validation signal.\\Rank averaging stays skeptical.\\Under distribution shift, skepticism wins.''}
+}}
+\end{center}
+\end{block}
+
+\end{column}
+
+\end{columns}
+
+% ============================================================
+% REFERENCES (full width, below columns, compact)
+% ============================================================
+\vspace{-0.8em}
+{\large\bfseries\color{DarkBlue} 6. References}\\[-0.5em]
+{\color{Accent}\rule{\textwidth}{1.5pt}}\\[0.2em]
+\begin{columns}[t,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+{\large
+\textbf{[1]} Weis et al. \textit{Nature Medicine} 28, 164--174 (2022). DRIAMS.\\[0.1em]
+\textbf{[2]} Ke et al. \textit{NeurIPS} 30, 3146--3154 (2017). LightGBM.
+}
+\end{column}
+\begin{column}{0.48\textwidth}
+{\large
+\textbf{[3]} Chen \& Guestrin. \textit{KDD}, 785--794 (2016). XGBoost.\\[0.1em]
+\textbf{[4]} Prokhorenkova et al. \textit{NeurIPS} 31, 6638--6648 (2018). CatBoost.
+}
+\end{column}
+\end{columns}
+\vspace{0.2em}
+
+% ============================================================
+% FOOTER (using TikZ for precise positioning)
+% ============================================================
+\begin{tikzpicture}[remember picture,overlay]
+  \path[use as bounding box] (0,0) rectangle (0,0);
+  % Dark blue footer bar (positioned at bottom)
+  \fill[DarkBlue] ([yshift=0cm]current page.south west) rectangle ([yshift=1.5cm]current page.south east);
+  % Red accent line on top of footer
+  \fill[Accent] ([yshift=1.5cm]current page.south west) rectangle ([yshift=1.65cm]current page.south east);
+  % Footer text
+  \node[anchor=center, text=white, font=\large] at ([yshift=0.75cm]current page.south) {UC3M Machine Learning for Health \enspace $\cdot$ \enspace January 2026 \enspace $\cdot$ \enspace Kaggle AMR Challenge};
+\end{tikzpicture}
+
+\vspace{0pt}
+\end{frame}
+\end{document}
