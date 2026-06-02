@@ -1,0 +1,47 @@
+# ---- Data (not distributed; see data/README.md) ----
+# /raw may be a local symlink to the dataset — never commit it (would dangle + leak a local path)
+/raw
+/raw/
+data/processed/*.npz
+*.zip
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- Environments ----
+.venv/
+venv/
+.env
+
+# ---- Experiment / model run artifacts (regenerable) ----
+outputs/*_runs/
+outputs/experiments/
+outputs/models/
+catboost_info/
+mlruns/
+*.log
+
+# ---- LaTeX build intermediates (poster) ----
+poster/*.aux
+poster/*.log
+poster/*.out
+poster/*.toc
+poster/*.nav
+poster/*.snm
+poster/*.fls
+poster/*.fdb_latexmk
+poster/*.synctex.gz
+poster/*.bbl
+poster/*.blg
+
+# ---- OS / editor ----
+.DS_Store
+.vscode/
+.idea/
+
+# NOTE: kept on purpose (curated deliverables):
+#   reports/figures/**, outputs/submissions/**, poster/*.tex, poster/*.png, poster/*.pdf
