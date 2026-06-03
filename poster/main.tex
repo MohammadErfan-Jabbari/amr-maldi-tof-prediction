@@ -246,7 +246,7 @@ Knowing that \textit{K.~pneumoniae} dominates the test set (51\%) and \textit{P.
 
 \vspace{0.6em}
 \textbf{3. Intrinsic Resistance Rules}\\[0.3em]
-Certain species are intrinsically resistant to certain antibiotics. This biological prior gives us 18.8\% of predictions for free with 100\% confidence. We override model outputs with hard-coded resistance rules.
+Certain species are intrinsically resistant to certain antibiotics. This biological prior fixes \textasciitilde4.3\% of test predictions for free at 100\% confidence ($\sim$22\% of test samples get $\geq$1 deterministic label). We override model outputs with hard-coded resistance rules.
 
 \vspace{0.8em}
 \begin{center}
