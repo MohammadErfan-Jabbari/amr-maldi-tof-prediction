@@ -1,0 +1,25 @@
+{
+  "individual_models": {
+    "lgb": 0.8053077177620793,
+    "xgb": 0.8034750236099255,
+    "cat": 0.7995164391800518
+  },
+  "blend_mean_auc": 0.8083722502583872,
+  "blend_plus_intrinsic_mean_auc": 0.8083471116413754,
+  "per_antibiotic": {
+    "Ampicillin": 0.880387337057728,
+    "Levofloxacin": 0.6959042774086379,
+    "Ciprofloxacin": 0.7080529319165684,
+    "Imipenem": 0.9601459444288521,
+    "Amoxicillin_Clavulanic_acid": 0.7240618661257606,
+    "Ertapenem": 0.8660085457492264,
+    "Cefotaxime": 0.7614691409260687,
+    "Cefuroxime": 0.8707468495181616
+  },
+  "per_species": {
+    "E. coli": 0.6467351410890402,
+    "K. pneumoniae": 0.6922305088375467,
+    "P. mirabilis": 0.6965826812940696,
+    "P. aeruginosa": 0.9411764705882353
+  }
+}
