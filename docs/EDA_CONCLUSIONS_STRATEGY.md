@@ -18,7 +18,7 @@
 
 ### 3. Extreme Feature Sparsity
 - 93.3% zeros in MALDI features
-- ~765 constant features (remove with var < 1e-5)
+- ~400 constant features (6.7%; remove with var < 1e-5)
 - **LightGBM >> Neural Networks** for this data
 
 ### 4. Missing Labels

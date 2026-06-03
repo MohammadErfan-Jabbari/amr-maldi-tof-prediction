@@ -59,6 +59,18 @@ model output on exactly those cells removes variance without adding bias.
 | Masking missing labels | Optimizing one species' AUC |
 | Intrinsic-resistance rules | Treating missing labels as random |
 
+## Pooled vs. within-species performance (reproduced)
+
+`experiments/reproduce_holdout_eval.py` re-derives the pipeline on the distribution-matched
+holdout (mean AUC 0.808). The aggregate hides the real structure: within each test-dominant
+species the blend scores only 0.65–0.70 (E. coli 0.65, K. pneumoniae 0.69, P. mirabilis 0.70),
+versus ~0.81 pooled. A large part of the pooled score is the model separating *species* —
+which are themselves predictive of resistance — rather than discriminating resistance among
+isolates of the *same* species. Per antibiotic, the carbapenem/aminopenicillin signals are
+strong (Imipenem 0.96, Ampicillin 0.88) while the fluoroquinolones are weak (Levofloxacin
+0.70, Ciprofloxacin 0.71). This decomposition is the honest account of where the ceiling
+comes from, and it is the kind of result the headline metric alone would hide.
+
 ## A note on confirmed vs. internal numbers
 
 Public-LB values reported here (~0.832 / ~0.833 / ~0.838) correspond to logged Kaggle

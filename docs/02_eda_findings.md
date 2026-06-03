@@ -32,7 +32,7 @@ P. aeruginosa 30 samples × 5 drugs + P. mirabilis 193 samples × 1 drug), i.e. 
 
 ## 3. Extreme feature sparsity
 
-93.3% of feature values are zero; ~18.8% of the 6,000 features are constant
+93.3% of feature values are zero; ~400 of the 6,000 features (6.7%) are constant
 (zero-variance) and dropped (`var < 1e-5`). This is why **gradient-boosted trees beat
 neural nets** here — native sparse handling, no need for the data density an MLP wants.
 

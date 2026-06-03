@@ -14,7 +14,7 @@ This document presents comprehensive data profiling results for the AMR Predicti
 - **Severe species distribution shift**: P. aeruginosa drops from 43% (train) to 3% (test)
 - **High label sparsity**: 42.8% of Amoxicillin_Clavulanic_acid labels are missing
 - **Extreme feature sparsity**: 93% of MALDI feature values are zero
-- **~1,128 constant features** with zero variance (18.8% of features)
+- **~400 constant features** with zero variance (6.7% of features)
 - **No duplicate samples or data leakage** between train/test
 
 ---
@@ -186,11 +186,11 @@ This document presents comprehensive data profiling results for the AMR Predicti
 
 ### 5.2 Constant Features
 
-**Zero-variance features**: ~1,128 out of 6,000 (18.8%)
+**Zero-variance features**: ~400 out of 6,000 (6.7%)
 
 **Note**: This is estimated from a 500-sample random sample. Full verification needed.
 
-**Implication**: 1,128 features provide no discriminative information and should be removed.
+**Implication**: ~400 features provide no discriminative information and should be removed.
 
 ### 5.3 Species Distribution
 
@@ -232,7 +232,7 @@ This document presents comprehensive data profiling results for the AMR Predicti
 - **No leakage**: 0 sample_id overlap between train/test
 - **No corruption**: No negative or infinite values
 - **Complete features**: 0 missing values in features or metadata
-- **Issue**: 1,128 constant features (18.8%) provide no information
+- **Issue**: ~400 constant features (6.7%) provide no information
 
 ### 1.4 Do train/test have identical feature sets?
 - **Yes**: All 6,000 MALDI features present in both
@@ -250,7 +250,7 @@ This document presents comprehensive data profiling results for the AMR Predicti
 - **Recommendation**: Treat missing labels as unlabeled data in semi-supervised framework
 
 ### 7.2 Feature Selection
-- **Remove ~1,128 constant features** (zero variance)
+- **Remove ~400 constant features** (zero variance)
 - **Remaining**: ~4,872 informative features
 - **Next step**: Phase 2 feature analysis to identify low-variance and correlated features
 
@@ -280,7 +280,7 @@ This document presents comprehensive data profiling results for the AMR Predicti
 ## 8. Next Steps & Recommendations
 
 ### Immediate Actions
-1. **Remove constant features** (~1,128) before modeling
+1. **Remove constant features** (~400) before modeling
 2. **Implement species-stratified CV** for all model evaluation
 3. **Use masked loss** for training with missing labels
 4. **Create species-weighted validation** matching test distribution
@@ -335,7 +335,7 @@ Phase 1 data profiling reveals a dataset with:
 - **Good data quality**: No duplicates, no leakage, complete features
 - **Severe class imbalance**: P. aeruginosa overrepresented 14x in train vs test
 - **Semi-supervised challenge**: 42.8% missing labels for one antibiotic
-- **High dimensionality**: 6,000 features with 93% sparsity and 18.8% constant
+- **High dimensionality**: 6,000 features with 93% sparsity and 6.7% constant
 - **Systematic missingness**: Biologically informed, not random
 
 **Primary recommendation**: Use tree-based models (LightGBM) with species-stratified cross-validation and masked loss for missing labels. Feature selection critical to reduce dimensionality.

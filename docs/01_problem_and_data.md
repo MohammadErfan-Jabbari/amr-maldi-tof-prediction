@@ -24,7 +24,7 @@ The 8 targets (with training resistance rate):
 
 - **6,000 features** per sample: binned MALDI-TOF m/z intensities (~3 Da/bin over the
   ~2–20 kDa range dominated by ribosomal proteins). The matrix is **93.3% zeros** —
-  natural sparsity, plus ~18.8% of features are constant (zero-variance) and removable.
+  natural sparsity, plus ~400 of the 6,000 features (6.7%) are constant (zero-variance) and removable.
 - **3,360 train / 1,000 test** samples across **4 bacterial species**.
 - **Labels are partially missing** (e.g. 42.8% missing for Amoxicillin/Clavulanic
   acid, and ~96% missing for that drug within P. aeruginosa). Missingness is **not
